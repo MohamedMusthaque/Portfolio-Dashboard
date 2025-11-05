@@ -7,8 +7,8 @@ export type Investment = {
     name: string;
     ticker: string;
     type: string;
-    purchasePrice: number;
-    currentValue: number;
+    purchasePrice: number | string;
+    currentValue: number | string;
 };
 
 // Props:
@@ -78,16 +78,16 @@ export default function InvestmentList({ refreshTrigger, onEdit, onDataRefreshed
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {investments.map((inv) => {
-                        const performance = inv.currentValue - inv.purchasePrice;
+                        const performance = Number(inv.currentValue) - Number(inv.purchasePrice);
                         const isPositive = performance >= 0;
                         return (
                             <div key={inv.id} className="border p-4 rounded-lg shadow-sm">
-                                <h3 className="text-lg font-bold">{inv.name} ({inv.ticker})</h3>
+                                <h3 className="text-lg font-bold text-black">{inv.name} ({inv.ticker})</h3>
                                 <p className="text-sm text-gray-500">{inv.type}</p>
-                                <p>Current Value: ${inv.currentValue.toFixed(2)}</p>
-                                <p>Purchase Price: ${inv.purchasePrice.toFixed(2)}</p>
+                                <p className="text-black">Current Value: ${Number(inv.currentValue).toFixed(2)}</p>
+                                <p className="text-black">Purchase Price: ${Number(inv.purchasePrice).toFixed(2)}</p>
                                 <p className={isPositive ? 'text-green-600' : 'text-red-600'}>
-                                    Performance: {isPositive ? '+' : ''}${performance.toFixed(2)}
+                                    Performance: {isPositive ? '+' : ''}${Number(performance).toFixed(2)}
                                 </p>
                                 <div className="mt-4 space-x-2">
                                     <button
