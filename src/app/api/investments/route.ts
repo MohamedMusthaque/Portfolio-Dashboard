@@ -1,4 +1,3 @@
-// app/api/investments/route.ts
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth/next"; // Helper to get session on server
@@ -10,7 +9,7 @@ const prisma = new PrismaClient();
 export async function GET() {
   const session = await getServerSession(authOptions);
 
-  if (!session || !session.user) {
+  if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -19,7 +18,9 @@ export async function GET() {
     const investments = await prisma.investment.findMany({
       where: { 
         portfolio: { 
-          userId: session.user.id 
+          user: {
+            email: session.user.email
+          }
         } 
       },
       include: {
@@ -53,16 +54,8 @@ export async function GET() {
 // POST: Add a new investment 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
+  if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // Debug logging
-  console.log("Session:", JSON.stringify(session, null, 2));
-  console.log("User ID:", session.user.id);
-
-  if (!session.user.id) {
-    return NextResponse.json({ error: "User ID not found in session" }, { status: 401 });
   }
 
   try {
@@ -77,18 +70,26 @@ export async function POST(request: Request) {
     }
 
     // Find or create a default portfolio for the user
-    let portfolio = await prisma.portfolio.findFirst({
-      where: { userId: session.user.id }
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { portfolios: true },
     });
 
-    if (!portfolio) {
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    let portfolio;
+    if (user.portfolios.length === 0) {
       // Create a default portfolio if none exists
       portfolio = await prisma.portfolio.create({
         data: {
           name: "My Portfolio",
-          userId: session.user.id
+          userId: user.id
         }
       });
+    } else {
+      portfolio = user.portfolios[0];
     }
 
     const newInvestment = await prisma.investment.create({
