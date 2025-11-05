@@ -52,7 +52,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">
+        <h1 className="text-2xl font-bold mb-6 text-center text-black">
           Portfolio Dashboard Login
         </h1>
         
@@ -73,7 +73,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
+              className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
             />
           </div>
           <div className="mb-6">
@@ -86,7 +86,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
+              className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
             />
           </div>
           <button
