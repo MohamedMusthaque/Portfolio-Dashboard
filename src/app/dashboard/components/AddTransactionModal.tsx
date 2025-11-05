@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Investment } from "./InvestmentList"; // Import the type
 
 interface AddTransactionProps {
@@ -18,12 +18,44 @@ export default function AddTransactionModal({
   const [quantity, setQuantity] = useState("");
   const [price, setPrice] = useState("");
   const [error, setError] = useState("");
+  const [availableQuantity, setAvailableQuantity] = useState<number>(0);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch available quantity when investment changes
+  useEffect(() => {
+    const fetchAvailableQuantity = async () => {
+      if (!investment) return;
+      
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/investments/${investment.id}/quantity`);
+        if (res.ok) {
+          const data = await res.json();
+          setAvailableQuantity(data.availableQuantity);
+        }
+      } catch (err) {
+        console.error("Failed to fetch available quantity", err);
+      }
+      setLoading(false);
+    };
+
+    fetchAvailableQuantity();
+  }, [investment]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!investment) return;
 
     setError("");
+
+    // Frontend validation for SELL transactions
+    if (type === "SELL") {
+      const sellQuantity = parseInt(quantity);
+      if (sellQuantity > availableQuantity) {
+        setError(`Cannot sell ${sellQuantity} units. Only ${availableQuantity} units available.`);
+        return;
+      }
+    }
 
     try {
       const res = await fetch("/api/transactions", {
@@ -81,17 +113,30 @@ export default function AddTransactionModal({
               </select>
             </div>
             <div>
-              <label className="block text-gray-700 mb-1">Quantity</label>
+              <label className="block text-gray-700 mb-1">
+                Quantity
+                {type === "SELL" && (
+                  <span className="text-sm text-gray-500 ml-2">
+                    (Available: {loading ? "Loading..." : availableQuantity})
+                  </span>
+                )}
+              </label>
               <input 
                 type="number" 
                 placeholder="e.g., 10"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 min="1"
+                max={type === "SELL" ? availableQuantity : undefined}
                 step="1"
                 required
                 className="w-full px-3 py-2 border rounded-lg text-black" 
               />
+              {type === "SELL" && availableQuantity === 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  No units available to sell. You need to buy some first.
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-1">Price per unit (USD)</label>
@@ -117,7 +162,12 @@ export default function AddTransactionModal({
             </button>
             <button
               type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+              disabled={type === "SELL" && availableQuantity === 0}
+              className={`px-4 py-2 rounded-lg ${
+                type === "SELL" && availableQuantity === 0
+                  ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700"
+              }`}
             >
               Add Transaction
             </button>

@@ -87,6 +87,37 @@ export async function POST(request: Request) {
       );
     }
 
+    // --- Validate SELL quantity ---
+    if (type === "SELL") {
+      // Calculate current holdings (total bought - total sold)
+      const transactions = await prisma.transaction.findMany({
+        where: { investmentId: investmentId },
+      });
+
+      let totalBought = 0;
+      let totalSold = 0;
+
+      transactions.forEach(tx => {
+        if (tx.type === "BUY") {
+          totalBought += tx.quantity;
+        } else if (tx.type === "SELL") {
+          totalSold += tx.quantity;
+        }
+      });
+
+      const availableQuantity = totalBought - totalSold;
+      const sellQuantity = parseInt(quantity);
+
+      if (sellQuantity > availableQuantity) {
+        return NextResponse.json(
+          { 
+            error: `Cannot sell ${sellQuantity} units. Only ${availableQuantity} units available.` 
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // --- Create Transaction ---
     const newTransaction = await prisma.transaction.create({
       data: {
