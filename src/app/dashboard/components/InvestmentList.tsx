@@ -60,6 +60,7 @@ export default function InvestmentList({ refreshTrigger, onEdit, onDataRefreshed
           alert("Failed to delete investment.");
         }
       } catch (err) {
+        console.error(err);
         alert("An error occurred while deleting.");
       }
     }
