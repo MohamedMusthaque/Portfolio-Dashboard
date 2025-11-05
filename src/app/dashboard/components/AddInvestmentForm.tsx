@@ -80,7 +80,7 @@ export default function AddInvestmentForm({ onInvestmentAdded }: { onInvestmentA
           className="px-3 py-2 border rounded-lg text-black"
         />
         <select value={type} onChange={(e) => setType(e.target.value)} required className={`px-3 py-2 border border-black rounded-lg ${type === "" ? "text-gray-400" : "text-black"}`}>
-          <option value="" disabled>Investment Type</option>
+          <option value="" disabled>Select Investment Type</option>
           <option value="Stock" className="text-black">Stock</option>
           <option value="Bond" className="text-black">Bond</option>
           <option value="Mutual Fund" className="text-black">Mutual Fund</option>

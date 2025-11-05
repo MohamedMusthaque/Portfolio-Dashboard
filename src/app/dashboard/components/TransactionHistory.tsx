@@ -43,9 +43,9 @@ export default function TransactionHistory({ refreshTrigger }: HistoryProps) {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md mt-6">
-      <h2 className="text-xl font-semibold mb-4">Transaction History</h2>
+      <h2 className="text-xl font-semibold mb-4 text-black">Transaction History</h2>
       {transactions.length === 0 ? (
-        <p>No transactions found.</p>
+        <p className="text-black">No transactions found.</p>
       ) : (
         <ul className="divide-y divide-gray-200">
           {transactions.map((tx) => (

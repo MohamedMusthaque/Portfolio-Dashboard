@@ -70,9 +70,9 @@ export default function InvestmentList({ refreshTrigger, onEdit, onDataRefreshed
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Portfolio Overview</h2>
+      <h2 className="text-xl font-semibold mb-4 text-black">Portfolio Overview</h2>
       {investments.length === 0 ? (
-        <p>You have no investments. Add one above to get started!</p>
+        <p className="text-black">You have no investments. Add one above to get started!</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {investments.map((inv) => {
