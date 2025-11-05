@@ -14,7 +14,7 @@ interface EditModalProps {
 }
 
 export default function EditInvestmentModal({ investment, onClose, onUpdated }: EditModalProps) {
-    // Local state for the form fields
+    // Local state for the form fields - initialize with current investment values
     const [ticker, setTicker] = useState(investment?.ticker || "");
     const [type, setType] = useState(investment?.type || "");
     const [purchasePrice, setPurchasePrice] = useState(investment?.purchasePrice.toString() || "");

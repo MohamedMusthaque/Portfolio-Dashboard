@@ -103,6 +103,7 @@ export default function Dashboard() {
 
       {/* 4. Edit Investment Modal (only appears when 'editingInvestment' is set) */}
       <EditInvestmentModal
+        key={editingInvestment?.id || 'no-investment'}
         investment={editingInvestment}
         onClose={handleModalClose}
         onUpdated={handleModalUpdate}
@@ -110,6 +111,7 @@ export default function Dashboard() {
 
       {/* 5. Add Investment Modal */}
       <AddTransactionModal
+        key={addingTransactionTo?.id || 'no-transaction'}
         investment={addingTransactionTo}
         onClose={handleTransactionModalClose}
         onTransactionAdded={handleTransactionAdded}
