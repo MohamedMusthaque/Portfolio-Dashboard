@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export type Investment = {
     id: string;
@@ -26,27 +26,56 @@ interface ListProps {
 export default function InvestmentList({ refreshTrigger, onEdit, onDataRefreshed, onAddTransaction }: ListProps) {
     const [investments, setInvestments] = useState<Investment[]>([]);
     const [loading, setLoading] = useState(true);
+    const [quantities, setQuantities] = useState<Record<string, number>>({});
+    const [quantitiesLoading, setQuantitiesLoading] = useState(false);
+
+    // Function to fetch available quantities for all investments
+    const fetchQuantities = async (investmentList: Investment[]) => {
+        setQuantitiesLoading(true);
+        const quantityPromises = investmentList.map(async (inv) => {
+            try {
+                const res = await fetch(`/api/investments/${inv.id}/quantity`);
+                if (res.ok) {
+                    const data = await res.json();
+                    return { id: inv.id, quantity: data.availableQuantity };
+                }
+            } catch (err) {
+                console.error(`Failed to fetch quantity for ${inv.id}`, err);
+            }
+            return { id: inv.id, quantity: 0 };
+        });
+
+        const results = await Promise.all(quantityPromises);
+        const quantityMap: Record<string, number> = {};
+        results.forEach(result => {
+            quantityMap[result.id] = result.quantity;
+        });
+        setQuantities(quantityMap);
+        setQuantitiesLoading(false);
+    };
 
     // Function to fetch data
-    const fetchInvestments = async () => {
+    const fetchInvestments = useCallback(async () => {
         setLoading(true);
         try {
             const res = await fetch("/api/investments");
             if (res.ok) {
                 const data = await res.json();
                 setInvestments(data);
+                // Fetch quantities after getting investments
+                await fetchQuantities(data);
             }
         } catch (err) {
             console.error("Failed to fetch investments", err);
         }
         setLoading(false);
-    };
+    }, []);
 
     // This effect runs when the component loads AND when 'refreshTrigger' changes
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchInvestments();
-    }, [refreshTrigger]);
+    }, [refreshTrigger, fetchInvestments]);
 
     const handleDelete = async (id: string) => {
         if (confirm("Are you sure you want to delete this investment? This will also delete all its transactions.")) {
@@ -56,7 +85,7 @@ export default function InvestmentList({ refreshTrigger, onEdit, onDataRefreshed
                 });
                 if (res.ok) {
                     // Refresh the list AND tell the parent to refresh transactions
-                    fetchInvestments();
+                    await fetchInvestments();
                     onDataRefreshed();
                 } else {
                     alert("Failed to delete investment.");
@@ -84,11 +113,22 @@ export default function InvestmentList({ refreshTrigger, onEdit, onDataRefreshed
                             <div key={inv.id} className="border p-4 rounded-lg shadow-sm">
                                 <h3 className="text-lg font-bold text-black">{inv.name} ({inv.ticker})</h3>
                                 <p className="text-sm text-gray-500">{inv.type}</p>
-                                <p className="text-black">Current Value: ${Number(inv.currentValue).toFixed(2)}</p>
-                                <p className="text-black">Purchase Price: ${Number(inv.purchasePrice).toFixed(2)}</p>
-                                <p className={isPositive ? 'text-green-600' : 'text-red-600'}>
-                                    Performance: {isPositive ? '+' : ''}${Number(performance).toFixed(2)}
-                                </p>
+                                <div className="space-y-1 mt-2">
+                                    <p className="text-black">Current Value: ${Number(inv.currentValue).toFixed(2)}</p>
+                                    <p className="text-black">Purchase Price: ${Number(inv.purchasePrice).toFixed(2)}</p>
+                                    <p className={isPositive ? 'text-green-600' : 'text-red-600'}>
+                                        Performance: {isPositive ? '+' : ''}${Number(performance).toFixed(2)}
+                                    </p>
+                                    <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-400">
+                                        <p className="text-blue-700 font-medium text-sm">
+                                            Available Quantity: {
+                                                quantitiesLoading
+                                                    ? 'Loading...'
+                                                    : (quantities[inv.id] !== undefined ? quantities[inv.id] : '0')
+                                            } units
+                                        </p>
+                                    </div>
+                                </div>
                                 <div className="mt-4 space-x-2">
                                     <button
                                         onClick={() => onAddTransaction(inv)}

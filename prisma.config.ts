@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "dotenv/config";  // Comment this line when running the docker build
 import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({

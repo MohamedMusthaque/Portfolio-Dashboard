@@ -14,7 +14,7 @@ interface EditModalProps {
 }
 
 export default function EditInvestmentModal({ investment, onClose, onUpdated }: EditModalProps) {
-    // Local state for the form fields
+    // Local state for the form fields - initialize with current investment values
     const [ticker, setTicker] = useState(investment?.ticker || "");
     const [type, setType] = useState(investment?.type || "");
     const [purchasePrice, setPurchasePrice] = useState(investment?.purchasePrice.toString() || "");
@@ -74,16 +74,80 @@ export default function EditInvestmentModal({ investment, onClose, onUpdated }: 
 
                 <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" placeholder="Name (e.g., Apple Inc.)" value={investment?.name || ""} readOnly className="px-3 py-2 border rounded-lg text-black bg-gray-100 cursor-not-allowed" />
-                        <input type="text" placeholder="Ticker (e.g., AAPL)" value={ticker} onChange={(e) => setTicker(e.target.value)} className="px-3 py-2 border rounded-lg text-black" />
-                        <select value={type} onChange={(e) => setType(e.target.value)} className={`px-3 py-2 border border-black rounded-lg ${type === "" ? "text-gray-400" : "text-black"}`}>
-                            <option value="" disabled>Investment Type</option>
-                            <option value="Stock">Stock</option>
-                            <option value="Bond">Bond</option>
-                            <option value="Mutual Fund">Mutual Fund</option>
-                        </select>
-                        <input type="number" placeholder="Purchase Price (USD)" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} min="0" step="0.01" required className="px-3 py-2 border rounded-lg text-black" />
-                        <input type="number" placeholder="Current Value (USD)" value={currentValue} onChange={(e) => setCurrentValue(e.target.value)} min="0" step="0.01" required className="px-3 py-2 border rounded-lg text-black" />
+                        <div>
+                            <label className="block text-gray-700 mb-1" htmlFor="edit-name">
+                                Investment Name
+                            </label>
+                            <input
+                                type="text"
+                                id="edit-name"
+                                placeholder="Name (e.g., Apple Inc.)"
+                                value={investment?.name || ""}
+                                readOnly
+                                className="w-full px-3 py-2 border rounded-lg text-black bg-gray-100 cursor-not-allowed"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-1" htmlFor="edit-ticker">
+                                Ticker Symbol
+                            </label>
+                            <input
+                                type="text"
+                                id="edit-ticker"
+                                placeholder="Ticker (e.g., AAPL)"
+                                value={ticker}
+                                onChange={(e) => setTicker(e.target.value)}
+                                className="w-full px-3 py-2 border rounded-lg text-black"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-1" htmlFor="edit-type">
+                                Investment Type
+                            </label>
+                            <select
+                                id="edit-type"
+                                value={type}
+                                onChange={(e) => setType(e.target.value)}
+                                className={`w-full px-3 py-2 border border-black rounded-lg ${type === "" ? "text-gray-400" : "text-black"}`}
+                            >
+                                <option value="" disabled>Investment Type</option>
+                                <option value="Stock">Stock</option>
+                                <option value="Bond">Bond</option>
+                                <option value="Mutual Fund">Mutual Fund</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-1" htmlFor="edit-purchase-price">
+                                Purchase Price (USD)
+                            </label>
+                            <input
+                                type="number"
+                                id="edit-purchase-price"
+                                placeholder="Purchase Price (USD)"
+                                value={purchasePrice}
+                                onChange={(e) => setPurchasePrice(e.target.value)}
+                                min="0"
+                                step="0.01"
+                                required
+                                className="w-full px-3 py-2 border rounded-lg text-black"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-1" htmlFor="edit-current-value">
+                                Current Value (USD)
+                            </label>
+                            <input
+                                type="number"
+                                id="edit-current-value"
+                                placeholder="Current Value (USD)"
+                                value={currentValue}
+                                onChange={(e) => setCurrentValue(e.target.value)}
+                                min="0"
+                                step="0.01"
+                                required
+                                className="w-full px-3 py-2 border rounded-lg text-black"
+                            />
+                        </div>
                     </div>
                     <div className="flex justify-end mt-6 space-x-3">
                         <button

@@ -6,6 +6,7 @@ import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,6 +17,17 @@ export default function RegisterPage() {
     setError("");
     setSuccess("");
 
+    // Client-side validation
+    if (!name.trim()) {
+      setError("Name is required.");
+      return;
+    }
+
+    if (name.length > 255) {
+      setError("Name must be less than 255 characters.");
+      return;
+    }
+
     if (password.length < 6) {
       setError("Password must be at least 6 characters long.");
       return;
@@ -25,7 +37,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       if (res.ok) {
@@ -60,6 +72,21 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2" htmlFor="name">
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              maxLength={255}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200 text-black"
+              placeholder="Enter your name"
+            />
+          </div>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2" htmlFor="email">
               Email

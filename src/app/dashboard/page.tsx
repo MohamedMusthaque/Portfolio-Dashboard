@@ -74,7 +74,7 @@ export default function Dashboard() {
         <div className="container mx-auto px-6 py-3 flex justify-between items-center">
           <h1 className="text-xl font-bold text-gray-800">My Dashboard</h1>
           <div>
-            <span className="text-gray-700 mr-4">Welcome, {session?.user?.email}</span>
+            <span className="text-gray-700 mr-4">Welcome, {session?.user?.name || session?.user?.email}</span>
             <button
               onClick={() => signOut({ callbackUrl: '/' })} // Sign out and redirect to home
               className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
@@ -103,6 +103,7 @@ export default function Dashboard() {
 
       {/* 4. Edit Investment Modal (only appears when 'editingInvestment' is set) */}
       <EditInvestmentModal
+        key={editingInvestment?.id || 'no-investment'}
         investment={editingInvestment}
         onClose={handleModalClose}
         onUpdated={handleModalUpdate}
@@ -110,6 +111,7 @@ export default function Dashboard() {
 
       {/* 5. Add Investment Modal */}
       <AddTransactionModal
+        key={addingTransactionTo?.id || 'no-transaction'}
         investment={addingTransactionTo}
         onClose={handleTransactionModalClose}
         onTransactionAdded={handleTransactionAdded}
