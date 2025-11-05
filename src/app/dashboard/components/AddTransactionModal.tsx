@@ -62,7 +62,7 @@ export default function AddTransactionModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       {/* Modal Content */}
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">
+        <h2 className="text-xl font-semibold mb-4 text-black">
           Add Transaction for <span className="font-bold">{investment.name}</span>
         </h2>
         {error && <div className="text-red-600 mb-3">{error}</div>}
@@ -74,7 +74,7 @@ export default function AddTransactionModal({
               <select 
                 value={type} 
                 onChange={(e) => setType(e.target.value as "BUY" | "SELL")} 
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border rounded-lg text-black"
               >
                 <option value="BUY">BUY</option>
                 <option value="SELL">SELL</option>
@@ -87,20 +87,23 @@ export default function AddTransactionModal({
                 placeholder="e.g., 10"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
+                min="1"
+                step="1"
                 required
-                className="w-full px-3 py-2 border rounded-lg" 
+                className="w-full px-3 py-2 border rounded-lg text-black" 
               />
             </div>
             <div>
-              <label className="block text-gray-700 mb-1">Price per unit</label>
+              <label className="block text-gray-700 mb-1">Price per unit (USD)</label>
               <input 
                 type="number" 
                 step="0.01"
                 placeholder="e.g., 150.25"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
+                min="0"
                 required
-                className="w-full px-3 py-2 border rounded-lg" 
+                className="w-full px-3 py-2 border rounded-lg text-black" 
               />
             </div>
           </div>
