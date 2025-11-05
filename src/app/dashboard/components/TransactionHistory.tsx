@@ -8,7 +8,10 @@ type Transaction = {
   quantity: number;
   price: number;
   date: string;
-  investmentId: string;
+  investment: {  // This is now a nested object
+    name: string;
+    ticker: string;
+  };
 };
 
 interface HistoryProps {
@@ -54,9 +57,9 @@ export default function TransactionHistory({ refreshTrigger }: HistoryProps) {
                 <span className={`font-bold ${tx.type === 'BUY' ? 'text-green-600' : 'text-red-600'}`}>
                   {tx.type}
                 </span>
-                <span className="ml-2">{tx.quantity} units @ ${tx.price.toFixed(2)}</span>
+                <span className="ml-2 text-black">{tx.quantity} units @ ${tx.price.toFixed(2)}</span>
                 <p className="text-sm text-gray-500">
-                  Investment ID: {tx.investmentId}
+                  {tx.investment.name} ({tx.investment.ticker})
                 </p>
               </div>
               <span className="text-sm text-gray-600">
