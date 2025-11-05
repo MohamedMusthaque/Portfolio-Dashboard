@@ -50,6 +50,7 @@ export async function POST(request: Request) {
     });
 
     // Don't send the password back, even the hashed one
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = newUser;
 
     return NextResponse.json(userWithoutPassword, { status: 201 }); // 201 Created
