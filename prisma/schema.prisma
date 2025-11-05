@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Uses the .env file
+}
+
+// User model for authentication 
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String // We will hash this!
+  portfolios Portfolio[]
+}
+
+// Portfolio model 
+model Portfolio {
+  id     String @id @default(cuid())
+  name   String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  investments Investment[]
+}
+
+// Investment model (stocks, bonds, etc.) [cite: 11]
+model Investment {
+  id           String    @id @default(cuid())
+  name         String    // e.g., "Apple Inc."
+  ticker       String    // e.g., "AAPL"
+  type         String    // "Stock", "Bond", "Mutual Fund"
+  purchasePrice Decimal
+  currentValue  Decimal
+  
+  portfolio    Portfolio  @relation(fields: [portfolioId], references: [id])
+  portfolioId  String
+  transactions Transaction[]
+}
+
+// Transaction model 
+model Transaction {
+  id           String    @id @default(cuid())
+  type         String    // "BUY" or "SELL"
+  quantity     Int
+  price        Decimal
+  date         DateTime  @default(now())
+  
+  investment   Investment @relation(fields: [investmentId], references: [id])
+  investmentId String
+}

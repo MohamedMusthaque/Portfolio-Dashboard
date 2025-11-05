@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  # Your Next.js App
+  app:
+    build: . # Build the app using the Dockerfile in this directory
+    ports:
+      - '3000:3000' # Map local port 3000 to container port 3000
+    environment:
+      # Pass the database URL to the app container
+      - DATABASE_URL=postgresql://postgres:12345@db:5432/investment_portfolio_db
+      - NEXTAUTH_SECRET=pGa7OPiapyfH74PjDLUBZ+dYfG2q/K7dIFfvuUsuuA4=
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      - db # Wait for the database to be ready before starting the app
+
+  # Your PostgreSQL Database
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=investment_portfolio_db
+    ports:
+      - '5434:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
