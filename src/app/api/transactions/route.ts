@@ -33,6 +33,15 @@ export async function GET(request: Request) {
         },
       },
     },
+    
+    include: {
+      investment: {
+        select: {
+          name: true,
+          ticker: true,
+        },
+      },
+    },
     orderBy: {
       date: 'desc', // Show newest first
     }
