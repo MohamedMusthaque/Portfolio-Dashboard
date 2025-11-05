@@ -7,10 +7,11 @@ import AddInvestmentForm from "./components/AddInvestmentForm";
 import InvestmentList, { Investment } from "./components/InvestmentList";
 import TransactionHistory from "./components/TransactionHistory";
 import EditInvestmentModal from "./components/EditInvestmentModal";
+import AddTransactionModal from "./components/AddTransactionModal";
 
 export default function Dashboard() {
   const router = useRouter();
-  
+
   // This is the auth guard.
   // It checks for an authenticated session.
   // If not found, it calls 'onUnauthenticated' to redirect to login.
@@ -28,7 +29,9 @@ export default function Dashboard() {
   // We will pass it as a prop 'refreshTrigger' to the list components.
   // When we want to force them to refetch data, we just increment this key.
   const [refreshKey, setRefreshKey] = useState(0);
-  
+
+  const [addingTransactionTo, setAddingTransactionTo] = useState<Investment | null>(null);
+
   // Helper to trigger a refresh for all data
   const triggerRefresh = () => {
     setRefreshKey(prevKey => prevKey + 1); // Incrementing the key
@@ -41,10 +44,22 @@ export default function Dashboard() {
   const handleModalClose = () => {
     setEditingInvestment(null);
   };
-  
+
   const handleModalUpdate = () => {
     triggerRefresh(); // Refresh data after update
     handleModalClose(); // Close modal
+  };
+
+  // New Handlers for the transaction modal
+  const handleAddTransactionClick = (investment: Investment) => {
+    setAddingTransactionTo(investment);
+  };
+  const handleTransactionModalClose = () => {
+    setAddingTransactionTo(null);
+  };
+  const handleTransactionAdded = () => {
+    triggerRefresh(); // Refresh all data
+    handleTransactionModalClose(); // Close the modal
   };
 
   // Show loading screen while session is being verified
@@ -73,23 +88,31 @@ export default function Dashboard() {
       <main className="container mx-auto px-6 py-8">
         {/* 1. Add Investment Form */}
         <AddInvestmentForm onInvestmentAdded={triggerRefresh} />
-        
+
         {/* 2. Portfolio Overview / Investment List */}
-        <InvestmentList 
-          refreshTrigger={refreshKey} 
+        <InvestmentList
+          refreshTrigger={refreshKey}
           onEdit={handleEditClick}
           onDataRefreshed={triggerRefresh}
+          onAddTransaction={handleAddTransactionClick}
         />
-        
+
         {/* 3. Transaction History */}
         <TransactionHistory refreshTrigger={refreshKey} />
       </main>
-      
+
       {/* 4. Edit Investment Modal (only appears when 'editingInvestment' is set) */}
       <EditInvestmentModal
         investment={editingInvestment}
         onClose={handleModalClose}
         onUpdated={handleModalUpdate}
+      />
+
+      {/* 5. Add Investment Modal */}
+      <AddTransactionModal
+        investment={addingTransactionTo}
+        onClose={handleTransactionModalClose}
+        onTransactionAdded={handleTransactionAdded}
       />
     </div>
   );

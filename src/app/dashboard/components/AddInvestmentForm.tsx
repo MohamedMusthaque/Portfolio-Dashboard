@@ -90,6 +90,8 @@ export default function AddInvestmentForm({ onInvestmentAdded }: { onInvestmentA
           placeholder="Purchase Price (USD)"
           value={purchasePrice}
           onChange={(e) => setPurchasePrice(e.target.value)}
+          min="0"
+          step="0.01"
           required
           className="px-3 py-2 border rounded-lg text-black"
         />
@@ -98,6 +100,8 @@ export default function AddInvestmentForm({ onInvestmentAdded }: { onInvestmentA
           placeholder="Current Value (USD)"
           value={currentValue}
           onChange={(e) => setCurrentValue(e.target.value)}
+          min="0"
+          step="0.01"
           required
           className="px-3 py-2 border rounded-lg text-black"
         />

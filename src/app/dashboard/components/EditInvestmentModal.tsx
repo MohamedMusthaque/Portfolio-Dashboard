@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Investment } from "./InvestmentList"; // We will create this type soon
 
 // Props:
@@ -8,102 +8,100 @@ import { Investment } from "./InvestmentList"; // We will create this type soon
 // - onClose: Function to call when closing the modal
 // - onUpdated: Function to call after a successful update (to refresh data)
 interface EditModalProps {
-  investment: Investment | null;
-  onClose: () => void;
-  onUpdated: () => void;
+    investment: Investment | null;
+    onClose: () => void;
+    onUpdated: () => void;
 }
 
 export default function EditInvestmentModal({ investment, onClose, onUpdated }: EditModalProps) {
-  // Local state for the form fields
-  const [name, setName] = useState("");
-  const [ticker, setTicker] = useState("");
-  const [type, setType] = useState("");
-  const [purchasePrice, setPurchasePrice] = useState("");
-  const [currentValue, setCurrentValue] = useState("");
-  const [error, setError] = useState("");
+    // Local state for the form fields
+    const [ticker, setTicker] = useState(investment?.ticker || "");
+    const [type, setType] = useState(investment?.type || "");
+    const [purchasePrice, setPurchasePrice] = useState(investment?.purchasePrice.toString() || "");
+    const [currentValue, setCurrentValue] = useState(investment?.currentValue.toString() || "");
+    const [error, setError] = useState("");
 
-  // When the 'investment' prop changes, update the local form state
-  useEffect(() => {
-    if (investment) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setName(investment.name);
-      setTicker(investment.ticker);
-      setType(investment.type);
-      setPurchasePrice(investment.purchasePrice.toString());
-      setCurrentValue(investment.currentValue.toString());
-    }
-  }, [investment]); // This effect runs whenever 'investment' changes
+    const handleCancel = () => {
+        // Reset form to original values
+        setTicker(investment?.ticker || "");
+        setType(investment?.type || "");
+        setPurchasePrice(investment?.purchasePrice.toString() || "");
+        setCurrentValue(investment?.currentValue.toString() || "");
+        setError("");
+        onClose();
+    };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!investment) return; // Should not happen
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!investment) return; // Should not happen
 
-    try {
-      const res = await fetch(`/api/investments/${investment.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          ticker,
-          type,
-          purchasePrice: parseFloat(purchasePrice),
-          currentValue: parseFloat(currentValue),
-        }),
-      });
+        try {
+            const res = await fetch(`/api/investments/${investment.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: investment.name,
+                    ticker,
+                    type,
+                    purchasePrice: parseFloat(purchasePrice),
+                    currentValue: parseFloat(currentValue),
+                }),
+            });
 
-      if (res.ok) {
-        onUpdated(); // Tell parent to refresh
-        onClose(); // Close the modal
-      } else {
-        const data = await res.json();
-        setError(data.error || "Failed to update investment");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("An unexpected error occurred.");
-    }
-  };
+            if (res.ok) {
+                onUpdated(); // Tell parent to refresh
+                onClose(); // Close the modal
+            } else {
+                const data = await res.json();
+                setError(data.error || "Failed to update investment");
+            }
+        } catch (err) {
+            console.error(err);
+            setError("An unexpected error occurred.");
+        }
+    };
 
-  // If no investment is selected, don't render anything
-  if (!investment) return null;
+    // If no investment is selected, don't render anything
+    if (!investment) return null;
 
-  return (
-    // Modal Backdrop
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      {/* Modal Content */}
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg">
-        <h2 className="text-xl font-semibold mb-4">Edit Investment</h2>
-        {error && <div className="text-red-600 mb-3">{error}</div>}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="px-3 py-2 border rounded-lg" />
-            <input type="text" value={ticker} onChange={(e) => setTicker(e.target.value)} className="px-3 py-2 border rounded-lg" />
-            <select value={type} onChange={(e) => setType(e.target.value)} className="px-3 py-2 border rounded-lg">
-              <option value="Stock">Stock</option>
-              <option value="Bond">Bond</option>
-              <option value="Mutual Fund">Mutual Fund</option>
-            </select>
-            <input type="number" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} className="px-3 py-2 border rounded-lg" />
-            <input type="number" value={currentValue} onChange={(e) => setCurrentValue(e.target.value)} className="px-3 py-2 border rounded-lg" />
-          </div>
-          <div className="flex justify-end mt-6 space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-            >
-              Save Changes
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+    return (
+        // Modal Backdrop
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            {/* Modal Content */}
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg">
+                <h2 className="text-xl font-semibold mb-4 text-black">Edit Investment - {investment?.name}</h2>
+                {error && <div className="text-red-600 mb-3">{error}</div>}
+
+                <form onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" placeholder="Name (e.g., Apple Inc.)" value={investment?.name || ""} readOnly className="px-3 py-2 border rounded-lg text-black bg-gray-100 cursor-not-allowed" />
+                        <input type="text" placeholder="Ticker (e.g., AAPL)" value={ticker} onChange={(e) => setTicker(e.target.value)} className="px-3 py-2 border rounded-lg text-black" />
+                        <select value={type} onChange={(e) => setType(e.target.value)} className={`px-3 py-2 border border-black rounded-lg ${type === "" ? "text-gray-400" : "text-black"}`}>
+                            <option value="" disabled>Investment Type</option>
+                            <option value="Stock">Stock</option>
+                            <option value="Bond">Bond</option>
+                            <option value="Mutual Fund">Mutual Fund</option>
+                        </select>
+                        <input type="number" placeholder="Purchase Price (USD)" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} min="0" step="0.01" required className="px-3 py-2 border rounded-lg text-black" />
+                        <input type="number" placeholder="Current Value (USD)" value={currentValue} onChange={(e) => setCurrentValue(e.target.value)} min="0" step="0.01" required className="px-3 py-2 border rounded-lg text-black" />
+                    </div>
+                    <div className="flex justify-end mt-6 space-x-3">
+                        <button
+                            type="button"
+                            onClick={handleCancel}
+                            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                        >
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 }
