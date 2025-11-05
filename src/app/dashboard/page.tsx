@@ -1,78 +1,96 @@
 "use client";
 
-import { useSession, signIn } from "next-auth/react";
-import { useEffect, useState } from "react";
-
-// Define a type for your investment data
-type Investment = {
-  id: string;
-  name: string;
-  ticker: string;
-  currentValue: number;
-  purchasePrice: number;
-};
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import AddInvestmentForm from "./components/AddInvestmentForm";
+import InvestmentList, { Investment } from "./components/InvestmentList";
+import TransactionHistory from "./components/TransactionHistory";
+import EditInvestmentModal from "./components/EditInvestmentModal";
 
 export default function Dashboard() {
-  const { data: session, status } = useSession();
-  const [investments, setInvestments] = useState<Investment[]>([]);
+  const router = useRouter();
+  
+  // This is the auth guard.
+  // It checks for an authenticated session.
+  // If not found, it calls 'onUnauthenticated' to redirect to login.
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/");
+    },
+  });
 
-  // Fetch investments when the component loads
-  useEffect(() => {
-    async function fetchInvestments() {
-      const res = await fetch("/api/investments"); // Call your API route
-      if (res.ok) {
-        const data = await res.json();
-        setInvestments(data);
-      }
-    }
+  // State to manage the Edit Modal
+  const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
 
-    if (status === "authenticated") {
-      fetchInvestments();
-    }
-  }, [status]); // Re-run when auth status changes
+  // This simple state value is a "key".
+  // We will pass it as a prop 'refreshTrigger' to the list components.
+  // When we want to force them to refetch data, we just increment this key.
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Helper to trigger a refresh for all data
+  const triggerRefresh = () => {
+    setRefreshKey(prevKey => prevKey + 1); // Incrementing the key
+  };
 
-  // Handle loading state
+  const handleEditClick = (investment: Investment) => {
+    setEditingInvestment(investment);
+  };
+
+  const handleModalClose = () => {
+    setEditingInvestment(null);
+  };
+  
+  const handleModalUpdate = () => {
+    triggerRefresh(); // Refresh data after update
+    handleModalClose(); // Close modal
+  };
+
+  // Show loading screen while session is being verified
   if (status === "loading") {
-    return <p>Loading...</p>;
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // Handle unauthenticated state
-  if (status === "unauthenticated") {
-    return (
-      <div>
-        <p>Access Denied. Please log in.</p>
-        <button onClick={() => signIn()} className="bg-blue-500 text-white p-2 rounded">
-          Log In
-        </button>
-      </div>
-    );
-  }
-
-  // The main dashboard UI
+  // If session is valid, render the dashboard
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Welcome, {session?.user?.email}</h1>
-      
-      <h2 className="text-2xl font-semibold mb-2">Your Portfolio </h2>
+    <div className="min-h-screen bg-gray-100">
+      <nav className="bg-white shadow-md">
+        <div className="container mx-auto px-6 py-3 flex justify-between items-center">
+          <h1 className="text-xl font-bold text-gray-800">My Dashboard</h1>
+          <div>
+            <span className="text-gray-700 mr-4">Welcome, {session?.user?.email}</span>
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })} // Sign out and redirect to home
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+            >
+              Log Out
+            </button>
+          </div>
+        </div>
+      </nav>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {investments.map((investment) => {
-          const performance = investment.currentValue - investment.purchasePrice;
-          const isPositive = performance >= 0;
-
-          return (
-            <div key={investment.id} className="border p-4 rounded-lg shadow-md bg-white">
-              <h3 className="text-xl font-bold">{investment.name} ({investment.ticker})</h3>
-              <p>Current Value: ${investment.currentValue}</p>
-              <p>Purchase Price: ${investment.purchasePrice}</p>
-              <p className={isPositive ? 'text-green-600' : 'text-red-600'}>
-                Performance: {isPositive ? '+' : ''}${performance.toFixed(2)}
-              </p>
-            </div>
-          );
-        })}
-      </div>
+      <main className="container mx-auto px-6 py-8">
+        {/* 1. Add Investment Form */}
+        <AddInvestmentForm onInvestmentAdded={triggerRefresh} />
+        
+        {/* 2. Portfolio Overview / Investment List */}
+        <InvestmentList 
+          refreshTrigger={refreshKey} 
+          onEdit={handleEditClick}
+          onDataRefreshed={triggerRefresh}
+        />
+        
+        {/* 3. Transaction History */}
+        <TransactionHistory refreshTrigger={refreshKey} />
+      </main>
       
+      {/* 4. Edit Investment Modal (only appears when 'editingInvestment' is set) */}
+      <EditInvestmentModal
+        investment={editingInvestment}
+        onClose={handleModalClose}
+        onUpdated={handleModalUpdate}
+      />
     </div>
   );
 }

@@ -1,64 +1,61 @@
 "use client";
 
 import { useState } from "react";
-import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const { status } = useSession(); // Check auth status
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
+    setSuccess("");
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
 
     try {
-      // 'credentials' matches the provider key in your NextAuth config
-      const result = await signIn("credentials", {
-        redirect: false, // We will handle redirect manually
-        email: email,
-        password: password,
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (result?.error) {
-        // Handle failed login
-        setError("Invalid email or password. Please try again.");
-      } else if (result?.ok) {
-        // Handle successful login
-        router.push("/dashboard");
+      if (res.ok) {
+        setSuccess("Registration successful! Redirecting to login...");
+        setTimeout(() => {
+          router.push("/"); // Redirect to login page
+        }, 2000);
+      } else {
+        const data = await res.json();
+        setError(data.error || "Registration failed.");
       }
     } catch (error) {
-      console.error("Login Error:", error);
+      console.error("Registration Error:", error);
       setError("An unexpected error occurred.");
     }
   };
 
-  // If user is already authenticated, redirect to dashboard
-  if (status === "authenticated") {
-    router.replace("/dashboard");
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-  
-  // Show loading state while checking session
-  if (status === "loading") {
-     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-black">
-          Portfolio Dashboard Login
-        </h1>
-        
+        <h1 className="text-2xl font-bold mb-6 text-center text-black">Create Account</h1>
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            {success}
           </div>
         )}
 
@@ -73,7 +70,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200 text-black"
             />
           </div>
           <div className="mb-6">
@@ -86,20 +83,21 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200 text-black"
             />
           </div>
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300"
+            disabled={!!success} // Disable button after success
           >
-            Log In
+            Register
           </button>
         </form>
         <p className="text-center mt-4 text-gray-600">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            Sign up
+          Already have an account?{" "}
+          <Link href="/" className="text-blue-600 hover:underline">
+            Log in
           </Link>
         </p>
       </div>

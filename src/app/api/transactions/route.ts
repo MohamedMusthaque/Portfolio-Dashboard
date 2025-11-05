@@ -7,8 +7,7 @@ const prisma = new PrismaClient();
 
 // --- GET: List all transactions for the logged-in user ---
 export async function GET(request: Request) {
-  const req = await request.json();
-  console.log("request ",req);
+  console.log("request ",request);
 
   const session = await getServerSession(authOptions);
 
