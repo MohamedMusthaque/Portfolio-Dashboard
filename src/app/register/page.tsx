@@ -98,6 +98,7 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200 text-black"
+              placeholder="Enter your email"
             />
           </div>
           <div className="mb-6">
@@ -111,6 +112,7 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200 text-black"
+              placeholder="Enter your password"
             />
           </div>
           <button
